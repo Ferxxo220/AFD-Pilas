@@ -1,0 +1,111 @@
+package Pila;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+
+/**
+ *
+ * @author cflot
+ */
+public class Ejercicio6 {
+
+    /*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+     */
+    static class Transition {
+
+        String nextState;
+        String popStack;
+        String pushStack;
+
+        public Transition(String nextState, String popStack, String pushStack) {
+            this.nextState = nextState;
+            this.popStack = popStack;
+            this.pushStack = pushStack;
+        }
+    }
+
+    private Map<String, Transition> transitions = new HashMap<>();
+    private String initialState = "q0";
+    private Set<String> finalStates = new HashSet<>(List.of("qf"));
+
+    public Ejercicio6() {
+
+        // Transiciones:
+        transitions.put("q0,a,Z", new Transition("q0", "Z", "AA"));
+        transitions.put("q0,b,Z", new Transition("q0", "Z", "BB"));
+        transitions.put("q0,b,Z", new Transition("q0", "Z", "BZ"));
+        transitions.put("q0,a,Z", new Transition("qf", "Z", "AZ"));
+        
+        transitions.put("q0,a,A", new Transition("q2", "A", "ε"));
+        transitions.put("q0,b,A", new Transition("q2", "A", "ε"));
+        transitions.put("q0,a,A", new Transition("q2", "A", "ε"));
+        transitions.put("q0,b,A", new Transition("q2", "A", "ε"));
+        
+        transitions.put("q0,a,A", new Transition("q2", "A", "ε"));
+        transitions.put("q0,b,A", new Transition("q2", "A", "ε"));
+        transitions.put("q0,a,A", new Transition("q2", "A", "ε"));
+        transitions.put("q0,b,A", new Transition("q2", "A", "ε"));
+        transitions.put("q0,ε,Z", new Transition("qf", "Z", "Z"));
+        
+        //TRANSISCION / SIMBOLO QUE ENTRA/ SIMBOLO QUE ESTA EN LA CIMA
+        //SIMBOLO AL QUE ME DIRIJI / SIMBOLO EN LA CIMA/ SIMBOLO QUE 
+        //QUE APILO
+    }
+
+    public boolean validate(String input) {
+        Stack<String> stack = new Stack<>();
+        stack.push("Z");
+        String currentState = initialState;
+        int index = 0;
+
+        while (index <= input.length()) {
+            String symbol = (index < input.length()) ? String.valueOf(input.charAt(index)) : "ε";
+            String stackTop = stack.isEmpty() ? "ε" : stack.peek();
+
+            String key = currentState + "," + symbol + "," + stackTop;
+            Transition t = transitions.get(key);
+
+            if (t == null) {
+                // Intenta ε-transición si existe
+                key = currentState + ",ε," + stackTop;
+                t = transitions.get(key);
+                if (t == null) {
+                    return false;
+                }
+            } else {
+                index++; // avanza en el input solo si usó un símbolo real
+            }
+
+            // Aplica transición
+            if (!t.popStack.equals("ε") && !stack.isEmpty()) {
+                stack.pop();
+            }
+            if (!t.pushStack.equals("ε") && !t.pushStack.equals("")) {
+                for (int i = t.pushStack.length() - 1; i >= 0; i--) {
+                    stack.push(String.valueOf(t.pushStack.charAt(i)));
+                }
+            }
+
+            currentState = t.nextState;
+        }
+
+        return finalStates.contains(currentState) && (stack.peek().equals("Z"));
+    }
+
+    public static void main(String[] args) {
+        Ejercicio6 pda = new Ejercicio6();
+
+        String[] testStrings = {"ab"};
+
+        for (String s : testStrings) {
+            boolean result = pda.validate(s);
+            System.out.println("Input: " + s + " => " + (result ? "Cadena Aceptada" : "Cadena Rechazada"));
+        }
+    }
+}
